@@ -1,0 +1,260 @@
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVCM - Sistema de Votação da Câmara Municipal</title>
+
+    <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="pragma" content="no-cache">
+
+    <meta name="description"
+        content="SVCM: Sistema de Votação da Câmara Municipal, desenvolvido pela BEP (bepkororoti.com). Solução inovadora para votações online, com segurança e transparência.">
+    <meta name="keywords"
+        content="SVCM, Sistema de Votação, Câmara Municipal, Votação Online, BEP, bepkororoti.com, Valdemir Vinagre Mendes, Tecnologia, Inovação, Votação Segura, Transparência">
+    <meta name="author" content="Valdemir Vinagre Mendes">
+    <meta property="og:title" content="SVCM - Sistema de Votação da Câmara Municipal">
+    <meta property="og:description"
+        content="SVCM: Sistema de Votação da Câmara Municipal, desenvolvido pela BEP (bepkororoti.com). Votação online segura e transparente.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://svcm.peconha.com">
+    <meta property="og:image" content="https://svcm.peconha.com/img/logo-svcm.png">
+    <meta property="og:site_name" content="SVCM">
+
+    <link rel="icon" href="img/favicon.ico">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        window.global = window;
+    </script>
+    <script type="importmap">
+    {
+        "imports": {
+            "bootstrap": "https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js",
+            "./js/auth.js": "./js/auth.js",
+            "config.js": "./config.js"
+        }
+    }
+    </script>
+    <style>
+        .btn-lg.active {
+            border-width: 2px;
+            transform: scale(0.97) rotate(0deg) skewX(1deg);
+            box-shadow: 3px 5px 2px rgba(2, 2, 2, 0.7);
+            transition: all 0.2s ease-in-out;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .btn-lg.active::after {
+            content: "ESCOLHIDO \2192";
+            /* Código Unicode para uma seta para a direita (→) */
+            position: absolute;
+            right: 0.3em;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.4em;
+            /* Ajuste o tamanho do ícone */
+            color: white;
+            background-color: rgba(2, 2, 2, 0.7);
+            padding: 0.2em 0.5em;
+            border-radius: 0.5em;
+        }
+
+        .live-indicator {
+            display: inline-block;
+            width: 12px;
+            /* Tamanho da bolinha */
+            height: 12px;
+            /* Tamanho da bolinha */
+            border-radius: 50%;
+            /* Torna a bolinha redonda */
+            background-color: red;
+            /* Cor da bolinha */
+            margin-left: 5px;
+            /* Espaço entre o texto e a bolinha */
+            animation: blink 1s infinite alternate;
+            /* Aplica a animação */
+        }
+
+        @keyframes blink {
+            from {
+                opacity: 1;
+            }
+
+            to {
+                opacity: 0;
+            }
+        }
+
+        /* LOADING */
+        @keyframes escreverPontos {
+            0% {
+                content: "";
+            }
+
+            33% {
+                content: ".";
+            }
+
+            66% {
+                content: "..";
+            }
+
+            100% {
+                content: "...";
+            }
+        }
+
+        #loading-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            /* Garante que ocupa a altura total da viewport */
+            width: 100%;
+            /* Garante que ocupa a largura total */
+            font-size: 1.5em;
+            background-color: rgba(255, 255, 255);
+            /* Fundo branco semi-transparente para cobrir o conteúdo */
+            position: fixed;
+            /* Mantém o loading fixo na tela enquanto o usuário rola */
+            top: 0;
+            left: 0;
+            z-index: 9999;
+            /* Garante que fique por cima de todo o conteúdo (um valor alto) */
+        }
+
+        #loading-container::after {
+            content: "";
+            display: inline-block;
+            /* Para que a largura seja respeitada */
+            width: 1.5em;
+            /* Espaço para os três pontos */
+            text-align: left;
+            /* Alinha os pontos à esquerda dentro do espaço */
+            overflow: hidden;
+            /* Esconde o que ultrapassa a largura */
+            animation: escreverPontos 1.5s infinite steps(3, end);
+        }
+
+        .conteudo-principal-escondido {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+    <script type="module">
+        import { checkAuth, logout } from './js/auth.js';
+        checkAuth();
+        window.logout = logout;
+    </script>
+
+    <div id="loading-container">
+        Carregando
+    </div>
+
+    <div id="offline-message" class="alert alert-danger d-none" role="alert">
+        Você está offline. Por favor, verifique sua conexão.
+    </div>
+
+    <nav id="content0" class="navbar navbar-expand-lg navbar-dark" style="background-color: var(--dark-color);">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <img src="img/logo_svcm.png" class="img-fluid" width="100" alt="SVCM">
+            </a>
+
+            <span class="d-flex align-items-center text-light" style="flex-direction: column;">
+                <small id="veread_nome" style="font-size: 0.6rem;"></small>
+                <small id="sessao_date" class="sessao_date d-block" style="font-size: 0.5rem;"></small>
+            </span>
+
+            <button class="btn btn-outline-light" onclick="logout()">
+                <i class="bi bi-box-arrow-right"></i> Sair
+            </button>
+        </div>
+    </nav>
+
+    <div class="container mt-4" id="content">
+        <div class="card shadow-sm" style="display: none;">
+            <div class="card-body">
+
+                <div class="mt-4">
+                    <h6>Materia em Votação:</h6>
+                    <h2 class="fw-bold">Carregando...</h2>
+                    <p>Carregando descrição...</p>
+                </div>
+
+                <div class="mt-4">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-success btn-lg" disabled>
+                            <i class="bi bi-check-lg"></i> Favorável
+                        </button>
+                        <button class="btn btn-danger btn-lg" disabled>
+                            <i class="bi bi-x-lg"></i> Contrário
+                        </button>
+                        <button class="btn btn-warning btn-lg" disabled>
+                            <i class="bi bi-dash-lg"></i> Abstenção
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Aguardando Votação...</h5>
+                <span id="sem_votacao"></span>
+                <div class="progress mt-3" style="height: 25px;">
+                    <div class="progress-bar bg-success" style="width: 0%">0 Favoráveis</div>
+                    <div class="progress-bar bg-danger" style="width: 0%">0 Contrários</div>
+                    <div class="progress-bar bg-warning" style="width: 0%">0 Abstenções</div>
+                </div>
+            </div>
+        </div>
+
+        <p><br></p>
+        <a href="http://bepkororoti.com">
+            <p class="text-center"><img src="img/bep.png" width="110" class="img-fluid" alt="BEP"></p>
+        </a>
+    </div>
+
+    <script type="module" src="main.js"></script>
+
+    <script>
+        function checkConnection() {
+            const offlineDiv = document.getElementById('offline-message');
+            const contentDiv = document.getElementById('content');
+            const contentDiv0 = document.getElementById('content0');
+
+            fetch('https://www.google.com', { mode: 'no-cors' })
+                .then(() => {
+                    console.log('Online');
+                    // Remove a classe 'd-none' para mostrar o conteúdo
+                    contentDiv.classList.remove('d-none');
+                    contentDiv0.classList.remove('d-none');
+                    // Adiciona a classe 'd-none' para ocultar a div offline
+                    offlineDiv.classList.add('d-none');
+                })
+                .catch(() => {
+                    console.log('Offline');
+                    // Remove a classe 'd-none' para mostrar a div offline
+                    offlineDiv.classList.remove('d-none');
+                    // Adiciona a classe 'd-none' para ocultar o conteúdo
+                    contentDiv.classList.add('d-none');
+                    contentDiv0.classList.add('d-none');
+                });
+        }
+
+        // Verifica a conexão a cada 5 segundos
+        setInterval(checkConnection, 5000);
+
+        // Verifica a conexão ao carregar a página
+        checkConnection();
+    </script>
+</body>
+
+</html>

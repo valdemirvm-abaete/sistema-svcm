@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administração - SVCM</title>
+
+    <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="pragma" content="no-cache">
+
+    <meta name="description"
+        content="SVCM: Sistema de Votação da Câmara Municipal, desenvolvido pela BEP (bepkororoti.com). Solução inovadora para votações online, com segurança e transparência.">
+    <meta name="keywords"
+        content="SVCM, Sistema de Votação, Câmara Municipal, Votação Online, BEP, bepkororoti.com, Valdemir Vinagre Mendes, Tecnologia, Inovação, Votação Segura, Transparência">
+    <meta name="author" content="Valdemir Vinagre Mendes">
+    <meta property="og:title" content="SVCM - Sistema de Votação da Câmara Municipal">
+    <meta property="og:description"
+        content="SVCM: Sistema de Votação da Câmara Municipal, desenvolvido pela BEP (bepkororoti.com). Votação online segura e transparente.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://svcm.peconha.com">
+    <meta property="og:image" content="https://svcm.peconha.com/img/logo-svcm.png">
+    <meta property="og:site_name" content="SVCM">
+
+    <link rel="icon" href="img/favicon.ico">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles.css?sdf=sd23fs">
+    <script>
+        window.global = window;
+        window.adminFuncs = {}; // Namespace for functions called by onclick
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="importmap">
+        {
+            "imports": {
+                "bootstrap": "https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js",
+                "./js/auth.js": "./js/auth.js",
+                "./js/admin.js": "./js/admin.js",
+                "config.js": "./config.js"
+            }
+        }
+    </script>
+    <style>
+        .vereador-select-card {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .vereador-select-card.selected {
+            border: 2px solid var(--primary-color);
+            background-color: rgba(0, 123, 255, 0.1);
+        }
+
+        .session-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .session-actions .btn {
+            padding: 0.2rem 0.4rem;
+            font-size: 0.8rem;
+        }
+
+        .vereador-actions {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .status-badge {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
+        }
+
+        /* Styles for vote counts in the sessions table */
+        .vote-count-cell {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+            justify-content: flex-start;
+            /* Align to the start of the cell */
+        }
+
+        .vote-count-badge {
+            font-size: 0.75rem;
+            /* Smaller font size */
+            padding: 0.2em 0.4em;
+            /* Smaller padding */
+            border-radius: 0.2rem;
+            color: white;
+            min-width: 25px;
+            /* Minimum width for consistency */
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .vote-count-badge.bg-success {
+            background-color: var(--success-color);
+        }
+
+        .vote-count-badge.bg-danger {
+            background-color: var(--danger-color);
+        }
+
+        .vote-count-badge.bg-warning {
+            background-color: var(--warning-color);
+            color: black;
+        }
+
+        .vereador-actions button {
+            margin-right: 5px;
+        }
+
+        .table-responsive {
+            max-height: 440px;
+            /* Ajuste este valor conforme necessário */
+            overflow-y: auto;
+        }
+
+        .modern-menu {
+            background-color: #e9ecef;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            width: 100%;
+            /* Permite que os botões quebrem para a próxima linha */
+        }
+
+        .modern-menu .btn {
+            background-color: #0056b3;
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 12px 20px;
+            border-radius: 6px;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            margin: 5px;
+            width: 100%;
+            /* Adiciona margem para espaçamento entre os botões */
+        }
+
+        .modern-menu .btn:hover,
+        .modern-menu .btn:focus {
+            background-color: #007bff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .modern-menu .btn.active {
+            background-color: #0056b3;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Estilos para telas menores (celulares) */
+        @media (max-width: 576px) {
+            .modern-menu {
+                flex-direction: column;
+                /* Empilha os botões verticalmente */
+                align-items: center;
+                /* Centraliza os botões verticalmente */
+            }
+
+            .modern-menu .btn {
+                width: 100%;
+                /* Botões ocupam a largura total */
+                margin: 5px 0;
+                /* Ajusta a margem para espaçamento vertical */
+            }
+        }
+
+        .btn-ajuda {
+            position: inherit;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            width: 33px;
+            /* Largura desejada */
+            height: 33px;
+            /* Altura desejada (para manter circular) */
+            padding: 0;
+            /* Remove o padding padrão do botão */
+            display: flex;
+            justify-content: center;
+            /* Centraliza o ícone horizontalmente */
+            align-items: center;
+            /* Centraliza o ícone verticalmente */
+            font-size: 1.5rem;
+            /* Tamanho do ícone */
+            border-width: 0px;
+            /* Adiciona uma borda fina */
+        }
+
+        /* LOADING */
+        @keyframes escreverPontos {
+            0% {
+                content: "";
+            }
+
+            33% {
+                content: ".";
+            }
+
+            66% {
+                content: "..";
+            }
+
+            100% {
+                content: "...";
+            }
+        }
+
+        #loading-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            /* Opcional: para ocupar a tela inteira */
+            width: 100%;
+            font-size: 1.5em;
+        }
+
+        #loading-container::after {
+            content: "";
+            display: inline-block;
+            /* Para que a largura seja respeitada */
+            width: 1.5em;
+            /* Espaço para os três pontos */
+            text-align: left;
+            /* Alinha os pontos à esquerda dentro do espaço */
+            overflow: hidden;
+            /* Esconde o que ultrapassa a largura */
+            animation: escreverPontos 1.5s infinite steps(3, end);
+        }
+
+        .conteudo-principal-escondido {
+            display: none !important;
+        }
+
+        /* Estilos para telas menores */
+        .btn-group-vertical.btn-group-xs>.btn.btn-outline-light {
+            /* Usando .btn-group-xs como sugestão de nome */
+            padding: 0.1rem 0.25rem !important;
+            /* Reduzindo ainda mais o padding */
+            font-size: 0.6rem !important;
+            /* Diminuindo ainda mais o tamanho da fonte */
+            border-radius: 0.1rem !important;
+            /* Reduzindo o border-radius proporcionalmente */
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+    <script type="module">
+        import { checkAdminAuth, logout } from './js/auth.js';
+        checkAdminAuth();
+        window.logout = logout;
+
+        // Initialize Bootstrap Modals and setup event listener
+        document.addEventListener('DOMContentLoaded', () => {
+            const newSessionModalElement = document.getElementById('newSessionModal');
+            new bootstrap.Modal(newSessionModalElement); // Initialize new session modal
+
+            // Add event listener for when the new session modal is about to be shown
+            newSessionModalElement.addEventListener('show.bs.modal', function (event) {
+                const now = new Date();
+                const timezoneOffset = now.getTimezoneOffset() * 60000; // offset in milliseconds
+                const localISOTime = (new Date(now - timezoneOffset)).toISOString().slice(0, 16);
+                const dateTimeInput = newSessionModalElement.querySelector('input[name="session_datetime"]');
+                if (dateTimeInput) {
+                    dateTimeInput.value = localISOTime;
+                }
+            });
+
+            // Initialize Edit Vereador Modal
+            const editVereadorModalElement = document.getElementById('editVereadorModal');
+            if (editVereadorModalElement) {
+                new bootstrap.Modal(editVereadorModalElement);
+            }
+        });
+    </script>
+
+    <div id="loading-container">
+        Carregando
+    </div>
+
+    <div id="offline-message" class="alert alert-danger d-none" role="alert">
+        Você está offline. Por favor, verifique sua conexão.
+    </div>
+
+    <nav id="content0" class="navbar navbar-expand-lg navbar-dark" style="background-color: var(--dark-color);">
+        <div class="container-fluid d-flex align-items-center">
+            <a class="navbar-brand d-inline-flex align-items-center" href="/" style="width: fit-content;">
+                <img src="img/logo_svcm.png" class="img-fluid" width="100" alt="SVCM">
+            </a>
+
+            <div class="btn-group-vertical btn-group-xs">
+                <a href="aovivo.html" target="_blank" type="button" class="btn btn-outline-light">AO VIVO</a>
+                <button type="button" class="btn btn-outline-light" data-bs-toggle="modal"
+                    data-bs-target="#modalAjuda">AJUDA</button>
+            </div>
+
+            <button class="btn btn-outline-light ms-auto" onclick="logout()">
+                <i class="bi bi-box-arrow-right"></i> Sair
+            </button>
+        </div>
+    </nav>
+
+    <div class="container conteudo-principal-escondido" id="content">
+        <div class="row"><!-- conteiner e row -->
+
+            <div class="col-12 text-center">
+                <div class="btn-group modern-menu" role="group" aria-label="Menu Colapsos">
+                    <button class="btn" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne"
+                        aria-expanded="true" aria-controls="collapseOne">
+                        SESSÕES
+                    </button>
+                    <button class="btn ms-1" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo"
+                        aria-expanded="false" aria-controls="collapseTwo">
+                        VEREADORES
+                    </button>
+                    <button class="btn ms-1" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree"
+                        aria-expanded="false" aria-controls="collapseThree">
+                        HABILITADOS
+                    </button>
+                </div>
+            </div>
+
+            <div class="col-12 mb-4"><!-- col -->
+
+                <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-bs-parent=".row">
+                    <!-- collapse 1 -->
+
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h5 class="card-title mb-0">Sessões para Votação</h5>
+                                <button class="btn btn-primary" data-bs-toggle="modal"
+                                    data-bs-target="#newSessionModal">
+                                    <i class="bi bi-plus-lg"></i> Nova Sessão
+                                </button>
+                            </div>
+                            <div id="sessionsError" class="alert alert-warning d-none"></div>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>Data/Hora</th>
+                                            <th>Título</th>
+                                            <th>Status</th>
+                                            <th>Resultados</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="sessionsList">
+                                        <!-- Populated by JS -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- collapse 1 -->
+
+                <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-bs-parent=".row">
+                    <!-- collapse 2 -->
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+
+                            <h5 class="card-title mb-4">Cadastro de Vereadores</h5>
+                            <div id="registerError" class="alert alert-danger d-none mb-3"></div>
+                            <div id="registerSuccess" class="alert alert-success d-none mb-3"></div>
+                            <form id="registerForm">
+                                <div class="mb-3">
+                                    <label for="nome" class="form-label">Nome Completo</label>
+                                    <input type="text" class="form-control" id="nome" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="partido" class="form-label">Partido</label>
+                                    <select class="form-select" id="partido" required>
+                                        <option value="" disabled selected>Selecione um partido</option>
+                                        <option value="AGIR">AGIR</option>
+                                        <option value="AVANTE">AVANTE</option>
+                                        <option value="CIDADANIA">CIDADANIA</option>
+                                        <option value="DC">DC (Democracia Cristã)</option>
+                                        <option value="MDB">MDB</option>
+                                        <option value="MOBILIZA">MOBILIZA</option>
+                                        <option value="NOVO">NOVO</option>
+                                        <option value="PCB">PCB</option>
+                                        <option value="PCO">PCO</option>
+                                        <option value="PDT">PDT</option>
+                                        <option value="PL">PL</option>
+                                        <option value="PMB">PMB</option>
+                                        <option value="PMN">PMN</option>
+                                        <option value="PODE">PODE</option>
+                                        <option value="PP">PP (Progressistas)</option>
+                                        <option value="PRD">PRD</option>
+                                        <option value="PRTB">PRTB</option>
+                                        <option value="PSB">PSB</option>
+                                        <option value="PSD">PSD</option>
+                                        <option value="PSDB">PSDB</option>
+                                        <option value="PSOL">PSOL</option>
+                                        <option value="PSTU">PSTU</option>
+                                        <option value="PT">PT</option>
+                                        <option value="PV">PV</option>
+                                        <option value="REDE">REDE</option>
+                                        <option value="REPUBLICANOS">REPUBLICANOS</option>
+                                        <option value="SOLIDARIEDADE">SOLIDARIEDADE</option>
+                                        <option value="UNIÃO">UNIÃO Brasil</option>
+                                        <option value="UP">UP</option>
+                                        <!-- Add other parties as needed -->
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="senha" class="form-label">Senha (6 dígitos)</label>
+                                    <input type="text" class="form-control" id="senha" pattern="[0-9]{6}"
+                                        title="Digite exatamente 6 dígitos" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="foto" class="form-label">Foto</label>
+                                    <input type="file" class="form-control" id="foto" accept="image/*">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Cadastrar Vereador</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="card shadow-sm mt-4">
+                        <div class="card-body">
+                            <h5 class="card-title mb-4">Vereadores Cadastrados</h5>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Foto</th>
+                                            <th>Nome</th>
+                                            <th>Partido</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="vereadorList">
+                                        <!-- Populated by JS - Actions will be updated -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- collapse 2 -->
+
+                <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-bs-parent=".row">
+                    <!-- collapse 3 -->
+
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h5 class="card-title mb-0">Vereadores com Permissão para Votar</h5>
+                                <div>
+                                    <button class="btn btn-outline-primary me-2 mb-1" id="selectAllBtn">Selecionar
+                                        Todos</button>
+                                    <button class="btn btn-primary" id="saveParticipantsBtn">Salvar Seleção</button>
+                                </div>
+                            </div>
+                            <div id="participantsError" class="alert alert-danger d-none"></div>
+                            <div id="participantsSuccess" class="alert alert-success d-none"></div>
+                            <div class="row row-cols-2 row-cols-md-4 row-cols-lg-6 g-3" id="vereadoresSelectGrid">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- collapse 3 -->
+
+            </div><!-- col -->
+
+            <p><br></p>
+            <a href="http://bepkororoti.com">
+                <p class="text-center"><img src="img/bep.png" width="110" class="img-fluid" alt="BEP"></p>
+            </a>
+        </div><!-- conteiner e row -->
+    </div>
+
+    <div class="modal fade" id="newSessionModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Nova Matéria para Votação</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="newSessionError" class="alert alert-danger d-none"></div>
+                    <form id="newSessionForm">
+                        <div class="mb-3">
+                            <label class="form-label">Data e Hora</label>
+                            <input type="datetime-local" class="form-control" name="session_datetime" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Título</label>
+                            <input type="text" class="form-control" name="title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Descrição (opcional)</label>
+                            <textarea class="form-control" name="description" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="saveSessionBtn">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Vereador Modal -->
+    <div class="modal fade" id="editVereadorModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Vereador</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="editError" class="alert alert-danger d-none"></div>
+                    <form id="editVereadorForm">
+                        <input type="hidden" id="editVereadorId">
+                        <div class="mb-3 text-center">
+                            <img id="editFotoPreview" src="img/avatar.jpg" class="rounded-circle mb-2" width="100"
+                                height="100" alt="Foto Atual">
+                        </div>
+                        <div class="mb-3">
+                            <label for="editNome" class="form-label">Nome Completo</label>
+                            <input type="text" class="form-control" id="editNome" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editPartido" class="form-label">Partido</label>
+                            <select class="form-select" id="editPartido" required>
+                                <option value="" disabled>Selecione um partido</option>
+                                <option value="AGIR">AGIR</option>
+                                <option value="AVANTE">AVANTE</option>
+                                <option value="CIDADANIA">CIDADANIA</option>
+                                <option value="DC">DC (Democracia Cristã)</option>
+                                <option value="MDB">MDB</option>
+                                <option value="MOBILIZA">MOBILIZA</option>
+                                <option value="NOVO">NOVO</option>
+                                <option value="PCB">PCB</option>
+                                <option value="PCO">PCO</option>
+                                <option value="PDT">PDT</option>
+                                <option value="PL">PL</option>
+                                <option value="PMB">PMB</option>
+                                <option value="PMN">PMN</option>
+                                <option value="PODE">PODE</option>
+                                <option value="PP">PP (Progressistas)</option>
+                                <option value="PRD">PRD</option>
+                                <option value="PRTB">PRTB</option>
+                                <option value="PSB">PSB</option>
+                                <option value="PSD">PSD</option>
+                                <option value="PSDB">PSDB</option>
+                                <option value="PSOL">PSOL</option>
+                                <option value="PSTU">PSTU</option>
+                                <option value="PT">PT</option>
+                                <option value="PV">PV</option>
+                                <option value="REDE">REDE</option>
+                                <option value="REPUBLICANOS">REPUBLICANOS</option>
+                                <option value="SOLIDARIEDADE">SOLIDARIEDADE</option>
+                                <option value="UNIÃO">UNIÃO Brasil</option>
+                                <option value="UP">UP</option>
+                                <!-- Add other parties as needed -->
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editSenha" class="form-label">Nova Senha (6 dígitos, opcional)</label>
+                            <input type="text" class="form-control" id="editSenha" pattern="[0-9]{6}"
+                                title="Digite exatamente 6 dígitos numéricos se desejar alterar a senha.">
+                        </div>
+                        <div class="mb-3">
+                            <label for="editFoto" class="form-label">Nova Foto (Opcional)</label>
+                            <input type="file" class="form-control" id="editFoto" accept="image/*">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="saveVereadorChangesBtn">Salvar Alterações</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- The Modal -->
+    <div class="modal" id="modalAjuda">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content">
+
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <h4 class="modal-title">Modal Heading</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <!-- Modal body -->
+                <div class="modal-body">
+                    <nav id="content0" class="navbar navbar-expand-lg navbar-dark fixed-top search-container"
+                        style="background-color: var(--dark-color);">
+                        <div class="container-fluid">
+                            <span class="navbar-brand d-flex align-items-center" href="/">
+                                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">VOLTAR</button>
+                            </span>
+
+                            <input type="text" id="searchInput"
+                                placeholder="Buscar na ajuda... (Ex: 'como votar', 'cadastro', etc)"
+                                class="form-control">
+                        </div>
+                    </nav>
+
+                    <div class="container my-2">
+
+                        <div class="table-of-contents">
+                            <h5>Índice</h5>
+                            <ul>
+                                <li><a href="#login">1. Página de Login</a></li>
+                                <li><a href="#votacao">2. Página de Votação (Principal)</a></li>
+                                <li><a href="#admin">3. Painel Administrativo</a></li>
+                                <li><a href="#aovivo">4. Acompanhamento ao Vivo</a></li>
+                                <li><a href="#resultados">5. Resultados das Votações</a></li>
+                            </ul>
+                        </div>
+
+                        <div id="login" class="topic-section">
+                            <h4>1. Página de Login</h4>
+                            <div class="subtopic">
+                                <h5>Como Acessar o Sistema</h5>
+                                <p>Para acessar o SVCM (Sistema de Votação da Câmara Municipal), siga estas orientações:
+                                </p>
+                                <ul>
+                                    <li>Digite sua senha numérica pessoal de 6 dígitos no campo indicado (cada vereador
+                                        tem sua própria senha)</li>
+                                    <li>Verifique se digitou corretamente os números, pois a senha é sensível e deve ser
+                                        exata</li>
+                                    <li>Clique no botão "Entrar" ou pressione a tecla Enter para submeter</li>
+                                    <li>Se a senha estiver correta, você será automaticamente redirecionado para sua
+                                        área específica</li>
+                                    <li>Em caso de erro na senha, uma mensagem vermelha aparecerá indicando o problema
+                                    </li>
+                                </ul>
+                                <p class="alert alert-info">
+                                    <i class="bi bi-info-circle-fill"></i>
+                                    Importante: Vereadores e administradores têm senhas diferentes e são direcionados
+                                    para áreas diferentes do sistema.
+                                    Vereadores vão para a página de votação, enquanto administradores acessam o painel administrativo.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div id="votacao" class="topic-section">
+                            <h4>2. Página de Votação (Principal)</h4>
+                            <div class="subtopic">
+                                <h5>Como Participar da Votação</h5>
+                                <p>Na página principal de votação, você encontrará:</p>
+                                <ul>
+                                    <li>Cabeçalho com informações completas da sessão atual, incluindo data, hora e
+                                        título</li>
+                                    <li>Descrição detalhada do projeto ou matéria em votação</li>
+                                    <li>Três botões grandes para registrar seu voto:
+                                        <ul>
+                                            <li><strong style="color: var(--success-color);">Favorável (Verde)</strong>
+                                                - Para aprovar a matéria</li>
+                                            <li><strong style="color: var(--danger-color);">Contrário
+                                                    (Vermelho)</strong> - Para rejeitar a matéria</li>
+                                            <li><strong style="color: var(--warning-color);">Abstenção
+                                                    (Amarelo)</strong> - Para se abster da votação</li>
+                                        </ul>
+                                    </li>
+                                    <li>Os botões ficam desabilitados quando:
+                                        <ul>
+                                            <li>Não há sessão ativa no momento</li>
+                                            <li>Você não está habilitado para votar na sessão atual</li>
+                                            <li>A votação foi encerrada</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="subtopic">
+                                <h5>Acompanhamento dos Resultados</h5>
+                                <p>Durante a votação, você pode monitorar:</p>
+                                <ul>
+                                    <li>Barra de progresso colorida mostrando a distribuição atual dos votos:
+                                        <ul>
+                                            <li>Verde: Quantidade de votos favoráveis</li>
+                                            <li>Vermelho: Quantidade de votos contrários</li>
+                                            <li>Amarelo: Quantidade de abstenções</li>
+                                        </ul>
+                                    </li>
+                                    <li>Contagem numérica específica para cada tipo de voto</li>
+                                    <li>Atualização automática dos resultados em tempo real</li>
+                                    <li>Seu voto atual ficará destacado no respectivo botão</li>
+                                </ul>
+                                <p class="alert alert-warning">
+                                    <i class="bi bi-exclamation-triangle-fill"></i>
+                                    Atenção: É possível mudar seu voto durante a sessão ativa, mas apenas o último voto será contabilizado.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div id="admin" class="topic-section">
+                            <h4>3. Painel Administrativo</h4>
+                            <div class="subtopic">
+                                <h5>Gerenciamento das Votações</h5>
+                                <p>No painel de controle de Votação, você tem acesso a diversas funcionalidades:</p>
+                                <ul>
+                                    <li>Criar nova Votação:
+                                        <ul>
+                                            <li>Defina data e hora da Votação</li>
+                                            <li>Estabeleça um título claro para a matéria</li>
+                                            <li>Forneça uma descrição detalhada do que será votado</li>
+                                        </ul>
+                                    </li>
+                                    <li>Controle de Votações existentes:
+                                        <ul>
+                                            <li>Ativar/desativar Votação individualmente</li>
+                                            <li>Redirecionar participantes entre visualização ao vivo e resultados</li>
+                                            <li>Zerar contagem de votos quando necessário</li>
+                                            <li>Visualizar contagem atual de votos (favoráveis, contrários e abstenções)
+                                            </li>
+                                            <li>Excluir Votações que não são mais necessárias</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="subtopic">
+                                <h5>Cadastro e Gerenciamento de Vereadores</h5>
+                                <p>Para gerenciar o cadastro dos vereadores:</p>
+                                <ul>
+                                    <li>Novo cadastro:
+                                        <ul>
+                                            <li>Preencha o nome completo do vereador</li>
+                                            <li>Selecione o partido político na lista fornecida</li>
+                                            <li>Defina uma senha numérica de 6 dígitos</li>
+                                            <li>Faça upload da foto do vereador (opcional)</li>
+                                        </ul>
+                                    </li>
+                                    <li>Edição de cadastro:
+                                        <ul>
+                                            <li>Atualize nome, partido ou foto quando necessário</li>
+                                            <li>Altere a senha do vereador (opcional)</li>
+                                            <li>Visualize a foto atual antes de fazer alterações</li>
+                                        </ul>
+                                    </li>
+                                    <li>Exclusão de cadastro:
+                                        <ul>
+                                            <li>Remove completamente o vereador do sistema</li>
+                                            <li>Exige confirmação para evitar exclusões acidentais</li>
+                                            <li>Apaga também o histórico de votos deste vereador</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="subtopic">
+                                <h5>Controle de Participantes</h5>
+                                <p>Para gerenciar quem pode votar em cada sessão:</p>
+                                <ul>
+                                    <li>Seleção de participantes:
+                                        <ul>
+                                            <li>Visualize todos os vereadores em cards individuais</li>
+                                            <li>Clique nos cards para selecionar/deselecionar vereadores</li>
+                                            <li>Use o botão "Selecionar Todos" para agilizar o processo</li>
+                                            <li>Cards selecionados ficam destacados visualmente</li>
+                                        </ul>
+                                    </li>
+                                    <li>Confirmação de participantes:
+                                        <ul>
+                                            <li>Clique em "Salvar Seleção" para confirmar os participantes</li>
+                                            <li>Apenas vereadores selecionados poderão votar</li>
+                                            <li>A seleção pode ser alterada a qualquer momento</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div id="aovivo" class="topic-section">
+                            <h4>4. Acompanhamento ao Vivo</h4>
+                            <div class="subtopic">
+                                <h5>Visualização em Tempo Real</h5>
+                                <p>Na página de acompanhamento ao vivo, você pode:</p>
+                                <ul>
+                                    <li>Visualizar informações da Votação:
+                                        <ul>
+                                            <li>Título e descrição completa da matéria em votação</li>
+                                            <li>Data e hora da sessão atual</li>
+                                            <li>Status de atividade da sessão</li>
+                                        </ul>
+                                    </li>
+                                    <li>Acompanhar votos em tempo real:
+                                        <ul>
+                                            <li>Cards individuais para cada vereador participante</li>
+                                            <li>Mudança de cor do card conforme o voto (verde, vermelho ou amarelo)</li>
+                                            <li>Foto e nome do vereador sempre visíveis</li>
+                                            <li>Atualização automática sem necessidade de recarregar a página</li>
+                                        </ul>
+                                    </li>
+                                    <li>Monitorar totalizações:
+                                        <ul>
+                                            <li>Contadores no topo da página para cada tipo de voto</li>
+                                            <li>Atualização instantânea dos números</li>
+                                            <li>Visualização clara da distribuição dos votos</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div id="resultados" class="topic-section">
+                            <h4>5. Resultados das Votações</h4>
+                            <div class="subtopic">
+                                <h5>Visualização Detalhada dos Resultados</h5>
+                                <p>Na página de resultados de uma votação específica, você encontra:</p>
+                                <ul>
+                                    <li>Informações gerais:
+                                        <ul>
+                                            <li>Título completo da matéria votada</li>
+                                            <li>Data e hora exata da Votação</li>
+                                            <li>Descrição detalhada do projeto ou matéria</li>
+                                        </ul>
+                                    </li>
+                                    <li>Resultados numéricos:
+                                        <ul>
+                                            <li>Boxes coloridos com contagem de cada tipo de voto</li>
+                                            <li>Gráfico em pizza mostrando proporções visuais</li>
+                                            <li>Percentuais calculados automaticamente</li>
+                                        </ul>
+                                    </li>
+                                    <li>Lista de votantes:
+                                        <ul>
+                                            <li>Nome e foto de cada vereador participante</li>
+                                            <li>Indicador colorido do voto de cada participante</li>
+                                            <li>Organização clara e fácil de consultar</li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                                <p class="alert alert-info">
+                                    <i class="bi bi-info-circle-fill"></i>
+                                    Nota: Esta página pode ser acessada diretamente através de um link específico para cada votação, permitindo compartilhar os resultados mesmo após o encerramento da sessão.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/admin.js"></script>
+    <script>
+        const collapseElements = document.querySelectorAll('.collapse');
+
+        collapseElements.forEach(collapse => {
+            collapse.addEventListener('show.bs.collapse', () => {
+                collapseElements.forEach(otherCollapse => {
+                    if (otherCollapse !== collapse) {
+                        const bsCollapse = bootstrap.Collapse.getInstance(otherCollapse);
+                        if (bsCollapse) {
+                            bsCollapse.hide();
+                        }
+                    }
+                });
+            });
+        });
+
+        function resetCollapses() {
+            collapseElements.forEach((collapse, index) => {
+                const bsCollapse = bootstrap.Collapse.getInstance(collapse);
+                if (index === 0) {
+                    bsCollapse.show();
+                } else {
+                    bsCollapse.hide();
+                }
+            });
+        }
+
+        function checkConnection() {
+            const offlineDiv = document.getElementById('offline-message');
+            const contentDiv = document.getElementById('content');
+            const contentDiv0 = document.getElementById('content0');
+
+            fetch('https://www.google.com', { mode: 'no-cors' })
+                .then(() => {
+                    console.log('Online');
+                    // Remove a classe 'd-none' para mostrar o conteúdo
+                    contentDiv.classList.remove('d-none');
+                    contentDiv0.classList.remove('d-none');
+                    // Adiciona a classe 'd-none' para ocultar a div offline
+                    offlineDiv.classList.add('d-none');
+                })
+                .catch(() => {
+                    console.log('Offline');
+                    // Remove a classe 'd-none' para mostrar a div offline
+                    offlineDiv.classList.remove('d-none');
+                    // Adiciona a classe 'd-none' para ocultar o conteúdo
+                    contentDiv.classList.add('d-none');
+                    contentDiv0.classList.add('d-none');
+                });
+        }
+
+        // Verifica a conexão a cada 5 segundos
+        setInterval(checkConnection, 5000);
+
+        // Verifica a conexão ao carregar a página
+        checkConnection();
+
+        //Busca do "Ajuda"
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchText = e.target.value.toLowerCase();
+            
+            // Remove existing highlights
+            document.querySelectorAll('.search-highlight').forEach(el => {
+                const parent = el.parentNode;
+                parent.replaceChild(document.createTextNode(el.textContent), el);
+            });
+            
+            if (searchText.length < 2) return; // Minimum 2 characters to search
+            
+            const walker = document.createTreeWalker(
+                document.body,
+                NodeFilter.SHOW_TEXT,
+                null,
+                false
+            );
+            
+            let node;
+            let found = false;
+            
+            while (node = walker.nextNode()) {
+                const parent = node.parentElement;
+                if (parent.tagName === 'SCRIPT' || parent.tagName === 'STYLE') continue;
+                
+                const content = node.textContent;
+                const index = content.toLowerCase().indexOf(searchText);
+                
+                if (index >= 0) {
+                    if (!found) {
+                        // First match - scroll to it
+                        parent.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        found = true;
+                    }
+                    
+                    const span = document.createElement('span');
+                    span.className = 'search-highlight';
+                    
+                    const before = document.createTextNode(content.substring(0, index));
+                    const match = document.createTextNode(content.substring(index, index + searchText.length));
+                    const after = document.createTextNode(content.substring(index + searchText.length));
+                    
+                    span.appendChild(match);
+                    const fragment = document.createDocumentFragment();
+                    fragment.appendChild(before);
+                    fragment.appendChild(span);
+                    fragment.appendChild(after);
+                    
+                    parent.replaceChild(fragment, node);
+                }
+            }
+        });
+    </script>
+
+</body>
+
+</html>

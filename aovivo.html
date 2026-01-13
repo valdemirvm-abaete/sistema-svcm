@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Votação ao Vivo - SVCM</title>
+
+    <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="pragma" content="no-cache">
+
+    <meta name="description"
+        content="SVCM: Sistema de Votação da Câmara Municipal, desenvolvido pela BEP (bepkororoti.com). Solução inovadora para votações online, com segurança e transparência.">
+    <meta name="keywords"
+        content="SVCM, Sistema de Votação, Câmara Municipal, Votação Online, BEP, bepkororoti.com, Valdemir Vinagre Mendes, Tecnologia, Inovação, Votação Segura, Transparência">
+    <meta name="author" content="Valdemir Vinagre Mendes">
+    <meta property="og:title" content="SVCM - Sistema de Votação da Câmara Municipal">
+    <meta property="og:description"
+        content="SVCM: Sistema de Votação da Câmara Municipal, desenvolvido pela BEP (bepkororoti.com). Votação online segura e transparente.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://svcm.peconha.com">
+    <meta property="og:image" content="https://svcm.peconha.com/img/logo-svcm.png">
+    <meta property="og:site_name" content="SVCM">
+
+    <link rel="icon" href="img/favicon.ico">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        window.global = window;
+    </script>
+    <script type="importmap">
+    {
+        "imports": {
+            "bootstrap": "https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js",
+            "config.js": "./config.js"
+        }
+    }
+    </script>
+
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+        }
+
+        .container-fluid-custom {
+            width: 100%;
+            padding-left: 15px;
+            padding-right: 15px;
+            max-width: 100%;
+        }
+
+        .vereadores-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            padding: 15px;
+        }
+
+        .vereador-mini-card {
+            background: #f8f9fa;
+            border: 3px solid #c9c9c9;
+            border-radius: 8px;
+            padding: 15px;
+            transition: background-color 0.4s ease, transform 0.2s ease, border-color 0.4s ease;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            cursor: default;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            grid-template-rows: auto auto;
+            align-items: center;
+            text-align: left;
+            min-height: 100px;
+            box-sizing: border-box;
+        }
+
+        .vereador-mini-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .vereador-mini-card img {
+            width: 80px;
+            height: 80px;
+            border-radius: 6px;
+            margin-right: 15px;
+            object-fit: cover;
+            border: 2px solid #ccc;
+            grid-column: 1;
+            grid-row: 1 / span 2;
+            align-self: center;
+        }
+
+        .vereador-mini-card .nome {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 0;
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            grid-column: 2;
+            grid-row: 1;
+        }
+
+        .vereador-mini-card .partido {
+            font-size: 14px;
+            color: #6c757d;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            grid-column: 2;
+            grid-row: 2;
+        }
+
+        /* Estilos para telas grandes (telões) */
+        @media (min-width: 1400px) {
+            .vereadores-grid {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+                gap: 20px;
+                padding: 20px;
+            }
+
+            .vereador-mini-card {
+                padding: 20px;
+                min-height: 120px;
+            }
+
+            .vereador-mini-card img {
+                width: 100px;
+                height: 100px;
+                margin-right: 20px;
+            }
+
+            .vereador-mini-card .nome {
+                font-size: 22px;
+            }
+
+            .vereador-mini-card .partido {
+                font-size: 16px;
+            }
+        }
+
+        /* Estilos para telas médias */
+        @media (min-width: 992px) and (max-width: 1399px) {
+            .vereadores-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+                gap: 15px;
+            }
+
+            .vereador-mini-card img {
+                width: 80px;
+                height: 80px;
+            }
+
+            .vereador-mini-card .nome {
+                font-size: 18px;
+            }
+
+            .vereador-mini-card .partido {
+                font-size: 14px;
+            }
+        }
+
+        /* Estilos para telas de celular (largura máxima de 767px) */
+        @media (max-width: 767px) {
+            .vereadores-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 10px;
+                padding: 10px;
+            }
+
+            .vereador-mini-card {
+                padding: 10px;
+                min-height: 80px;
+            }
+
+            .vereador-mini-card img {
+                width: 50px;
+                height: 50px;
+                margin-right: 10px;
+            }
+
+            .vereador-mini-card .nome {
+                font-size: 12px;
+            }
+
+            .vereador-mini-card .partido {
+                font-size: 10px;
+            }
+        }
+
+        .vote-favorable {
+            border: 8px solid var(--success-color);
+            border-top-width: 2px;
+            border-left-width: 2px;
+            background-color: #d4edda !important;
+            /* Verde claro para fundo */
+        }
+
+        .vote-contrary {
+            border: 8px solid var(--danger-color);
+            border-top-width: 2px;
+            border-left-width: 2px;
+            background-color: #f8d7da !important;
+            /* Vermelho claro para fundo */
+        }
+
+        .vote-abstention {
+            border: 8px solid var(--warning-color);
+            border-top-width: 2px;
+            border-left-width: 2px;
+            background-color: #fff3cd !important;
+            /* Amarelo claro para fundo */
+        }
+
+        .vote-favorable .nome {
+            font-weight: bold;
+            color: #155724 !important;
+            /* Verde escuro para texto */
+        }
+
+        .vote-contrary .nome {
+            font-weight: bold;
+            color: #721c24 !important;
+            /* Vermelho escuro para texto */
+        }
+
+        .vote-abstention .nome {
+            font-weight: bold;
+            color: #856404 !important;
+            /* Amarelo escuro/marrom para texto */
+        }
+
+        .vote-favorable .partido {
+            color: #155724 !important;
+            /* Verde escuro para partido */
+            font-weight: 500;
+        }
+
+        .vote-contrary .partido {
+            color: #721c24 !important;
+            /* Vermelho escuro para partido */
+            font-weight: 500;
+        }
+
+        .vote-abstention .partido {
+            color: #856404 !important;
+            /* Amarelo escuro/marrom para partido */
+            font-weight: 500;
+        }
+
+        .navbar-vote-counts {
+            display: flex;
+            align-items: stretch;
+            height: 100%;
+            margin-right: auto;
+        }
+
+        .navbar-vote-box {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 7px 12px;
+            color: white;
+            font-size: 0.9rem;
+            min-width: 100px;
+            text-align: center;
+            height: 100%;
+        }
+
+        .navbar-vote-box .count {
+            font-size: 4rem;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .navbar-vote-box .label {
+            font-size: 1.3rem;
+            line-height: 1;
+            margin-top: 5px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        @media (min-width: 1400px) {
+            .navbar-vote-box .count {
+                font-size: 5rem;
+            }
+
+            .navbar-vote-box .label {
+                font-size: 1.5rem;
+            }
+        }
+
+        .nav-vote-success {
+            background-color: white;
+            border-bottom: 7px solid var(--success-color);
+            border-radius: 15px;
+            color: black;
+            box-shadow: #ccc 6px 7px 8px;
+            margin-right: 4px;
+        }
+
+        .nav-vote-danger {
+            background-color: white;
+            border-bottom: 7px solid var(--danger-color);
+            border-radius: 15px;
+            color: black;
+            box-shadow: #ccc 6px 7px 8px;
+            margin-right: 4px;
+        }
+
+        .nav-vote-warning {
+            background-color: white;
+            border-bottom: 7px solid var(--warning-color);
+            border-radius: 15px;
+            color: var(--success-color);
+            color: black;
+            box-shadow: #ccc 6px 7px 8px;
+        }
+
+        .badge.bg-danger {
+            font-size: 0.3em;
+            padding: 0.5em 0.6em 0.5em 0.6em;
+            max-height: 15px;
+            margin-left: 16px;
+            background-color: #dc3545;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        /* Estilos para a barra de progresso */
+        .partial-results-bar {
+            display: flex;
+            width: 100%;
+            height: 7px;
+            border-radius: 0px;
+            overflow: hidden;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        .partial-results-bar-segment {
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 0.8rem;
+        }
+
+        .favorable-bar {
+            background-color: var(--success-color);
+        }
+
+        .contrary-bar {
+            background-color: var(--danger-color);
+        }
+
+        .abstention-bar {
+            background-color: var(--warning-color);
+            color: black;
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+    <nav id="content0" class="navbar navbar-dark d-block"
+        style="background-color: var(--dark-color); overflow-wrap: break-word !important; white-space: normal !important;">
+        <div class="container-fluid-custom">
+            <div class="navbar-brand">
+                <div id="sessionInfo" style="display: none;">
+                    <div class="mb-2 d-flex d-content-between">
+                        <h6 class="card-subtitle" id="sessionDateTime" style="font-size: 50%;"></h6>
+
+                        <span class="badge bg-danger" id="activeStatus" style="display: none;">VOTAÇÃO AO VIVO</span>
+                    </div>
+                    <h4 class="mt-1" id="votingTitle"
+                        style="overflow-wrap: break-word !important; white-space: normal !important;"></h4>
+                    <p class="text-muted mb-0" id="votingDescription" style="font-size: 0px; height: 0px;"></p>
+
+                </div>
+            </div>
+
+        </div>
+
+    </nav>
+
+    <div id="partialResults" style="display: none;" class="mt-0 mb-1">
+        <div class="partial-results-bar mt-0">
+            <div id="favorableBar" class="partial-results-bar-segment favorable-bar" style="width: 0%;">
+
+            </div>
+            <div id="contraryBar" class="partial-results-bar-segment contrary-bar" style="width: 0%;">
+
+            </div>
+            <div id="abstentionBar" class="partial-results-bar-segment abstention-bar" style="width: 0%;">
+
+            </div>
+        </div>
+    </div>
+
+    <div id="offline-message" class="alert alert-danger d-none" role="alert">
+        Estamos sem Internet. Por favor, aguarde!
+    </div>
+
+    <div class="container-fluid-custom" id="content">
+
+        <div class="row pe-3 ps-3 pb-2">
+            <div class="col-12">
+
+                <div class="navbar-vote-counts">
+                    <div class="navbar-vote-box nav-vote-success flex-grow-1">
+                        <span class="count" id="navFavorableCount">0</span>
+                        <span class="label">Favor</span>
+                    </div>
+                    <div class="navbar-vote-box nav-vote-danger flex-grow-1">
+                        <span class="count" id="navContraryCount">0</span>
+                        <span class="label">Contra</span>
+                    </div>
+                    <div class="navbar-vote-box nav-vote-warning flex-grow-1">
+                        <span class="count" id="navAbstentionCount">0</span>
+                        <span class="label">Abst</span>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div id="noActiveSession" style="display: block;">
+            <div class="alert alert-info mb-0">
+                Aguardando início da votação...
+            </div>
+        </div>
+
+        <div class="card shadow-sm" style="margin: 0;">
+            <div class="card-body" style="padding: 0;">
+                <div class="vereadores-grid" id="vereadoresGrid">
+                    <p class="text-muted col-12">Carregando vereadores...</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <p><br></p>
+    <a href="http://bepkororoti.com">
+        <p class="text-center"><img src="img/bep.png" width="110" class="img-fluid" alt="BEP"></p>
+    </a>
+
+    <script type="module" src="js/aovivo.js"></script>
+    <script>
+        function checkConnection() {
+            const offlineDiv = document.getElementById('offline-message');
+            const contentDiv = document.getElementById('content');
+            const contentDiv0 = document.getElementById('content0');
+
+            fetch('https://www.google.com', { mode: 'no-cors' })
+                .then(() => {
+                    console.log('Online');
+                    // Remove a classe 'd-none' para mostrar o conteúdo
+                    contentDiv.classList.remove('d-none');
+                    contentDiv0.classList.remove('d-none');
+                    // Adiciona a classe 'd-none' para ocultar a div offline
+                    offlineDiv.classList.add('d-none');
+                })
+                .catch(() => {
+                    console.log('Offline');
+                    // Remove a classe 'd-none' para mostrar a div offline
+                    offlineDiv.classList.remove('d-none');
+                    // Adiciona a classe 'd-none' para ocultar o conteúdo
+                    contentDiv.classList.add('d-none');
+                    contentDiv0.classList.add('d-none');
+                });
+        }
+
+        // Verifica a conexão a cada 5 segundos
+        setInterval(checkConnection, 5000);
+
+        // Verifica a conexão ao carregar a página
+        checkConnection();
+
+    </script>
+
+</body>
+
+</html>

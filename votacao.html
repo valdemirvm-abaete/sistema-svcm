@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultado da Votação - SVCM</title>
+
+    <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="expires" content="0">
+    <meta http-equiv="pragma" content="no-cache">
+
+    <meta name="description"
+        content="SVCM: Sistema de Votação da Câmara Municipal, desenvolvido pela BEP (bepkororoti.com). Solução inovadora para votações online, com segurança e transparência.">
+    <meta name="keywords"
+        content="SVCM, Sistema de Votação, Câmara Municipal, Votação Online, BEP, bepkororoti.com, Valdemir Vinagre Mendes, Tecnologia, Inovação, Votação Segura, Transparência">
+    <meta name="author" content="Valdemir Vinagre Mendes">
+    <meta property="og:title" content="SVCM - Sistema de Votação da Câmara Municipal">
+    <meta property="og:description"
+        content="SVCM: Sistema de Votação da Câmara Municipal, desenvolvido pela BEP (bepkororoti.com). Votação online segura e transparente.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://svcm.peconha.com">
+    <meta property="og:image" content="https://svcm.peconha.com/img/logo-svcm.png">
+    <meta property="og:site_name" content="SVCM">
+
+    <link rel="icon" href="img/favicon.ico">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        window.global = window;
+    </script>
+    <script type="importmap">
+    {
+        "imports": {
+            "bootstrap": "https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js",
+            "config.js": "./config.js",
+            "./js/votacao.js": "./js/votacao.js"
+        }
+    }
+    </script>
+    <style>
+        .result-container {
+            max-width: auto;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .session-title {
+            color: var(--custom-blue);
+            font-size: 2em;
+            margin-bottom: 2px;
+            text-align: center;
+        }
+
+        .session-datetime {
+            font-style: italic;
+            font-size: 70%;
+            color: #6c757d;
+            text-align: center;
+            margin-bottom: 0px;
+        }
+
+        .session-description {
+            margin-bottom: 30px;
+            text-align: justify;
+            line-height: 88%;
+            font-size: 0.9rem;
+        }
+
+        .navbar-vote-counts {
+            display: block;
+            align-items: stretch;
+            height: auto;
+            margin-right: auto;
+        }
+
+        .navbar-vote-box {
+            display: block;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 7px 12px;
+            color: white;
+            font-size: 0.9rem;
+            max-height: 90px;
+            text-align: start;
+            height: 100%;
+        }
+
+        .navbar-vote-box .count {
+            font-size: 2.2rem;
+            font-weight: bold;
+            line-height: 1;
+        }
+
+        .navbar-vote-box .label {
+            font-size: 0.9rem;
+            line-height: 1;
+            margin-top: 2px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .nav-vote-success {
+            background-color: white;
+            border-bottom: 7px solid var(--success-color);
+            border-radius: 15px;
+            color: black;
+            box-shadow: #ccc 6px 7px 8px;
+            margin-right: 4px;
+        }
+
+        .nav-vote-danger {
+            background-color: white;
+            border-bottom: 7px solid var(--danger-color);
+            border-radius: 15px;
+            color: black;
+            box-shadow: #ccc 6px 7px 8px;
+            margin-right: 4px;
+        }
+
+        .nav-vote-warning {
+            background-color: white;
+            border-bottom: 7px solid var(--warning-color);
+            border-radius: 15px;
+            color: var(--success-color);
+            color: black;
+            box-shadow: #ccc 6px 7px 8px;
+        }
+
+        .participants-list {
+            margin-top: 0px;
+            border-top: 0px solid #dee2e6;
+            padding-top: 0px;
+        }
+
+        .participant-item {
+            display: flex;
+            align-items: start;
+            margin-bottom: 3px;
+            font-size: 0.6rem;
+            font-weight: normal;
+        }
+
+        .participant-photo {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 15px;
+            object-fit: cover;
+            display: none;
+        }
+
+        .participant-name {
+            font-weight: bold;
+        }
+
+        .loading-message {
+            text-align: center;
+            font-style: italic;
+            color: #6c757d;
+        }
+
+        .participant-vote {
+            display: inline-flex;
+            align-items: center;
+            margin-right: 7px;
+        }
+
+        .vote-icon {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .vote-icon.favorable {
+            background-color: var(--success-color);
+        }
+
+        .vote-icon.contrary {
+            background-color: var(--danger-color);
+        }
+
+        .vote-icon.abstention {
+            background-color: var(--warning-color);
+        }
+
+        /* Style for the Pie Chart Container */
+        .pie-chart-container {
+            width: 150px;
+            height: 150px;
+            margin: 20px auto;
+            position: relative;
+        }
+
+        /* Style for the Pie Chart SVG */
+        .pie-chart {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Style for the Pie Chart Segments */
+        .pie-segment {
+            stroke: white;
+            stroke-width: 2;
+        }
+
+        /* Style for the Percentage Labels */
+        .pie-percentage {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        #botao-inicio {
+            position: fixed;
+            /* Fixa o elemento na tela */
+            bottom: 15px;
+            /* Distância da parte inferior */
+            right: 15px;
+            /* Distância da parte direita */
+            background-color: #595f66;
+            /* Cor de fundo (azul padrão) */
+            color: white;
+            /* Cor do texto/ícone */
+            padding: 2px 2px 2px 3px;
+            border-radius: 5px;
+            /* Bordas arredondadas */
+            text-decoration: none;
+            /* Remove sublinhado do link */
+            z-index: 1000;
+            /* Garante que o botão fique acima de outros elementos */
+            cursor: pointer;
+            /* Muda o cursor ao passar por cima */
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+            /* Sombra suave */
+        }
+
+        #botao-inicio a {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            /* Para alinhar ícone e texto (se houver) */
+            align-items: center;
+            /* Alinha verticalmente */
+        }
+
+        #botao-inicio svg {
+            fill: white;
+            /* Cor do ícone SVG */
+            width: 20px;
+            height: 20px;
+            margin-right: 1px;
+            /* Espaço entre o ícone e o texto (se houver) */
+        }
+
+        /* Opcional: Adicione um efeito de hover */
+        #botao-inicio:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+    <div class="container">
+        <div id="loadingMessage" class="loading-message">Carregando informações da votação...</div>
+        <div id="resultContainer" class="result-container mt-3 mb-2" style="display:none;">
+            <h2 id="sessionTitle" class="session-title">Título da Sessão</h2>
+            <p id="sessionDateTime" class="session-datetime">Data e Hora</p>
+            <p id="sessionDescription" class="session-description">Descrição da Sessão.</p>
+
+            <div class="row border-top pt-2">
+                <div class="col-md-4  border-end">
+
+                    <h5>Resultado da Votação:</h5>
+
+                    <div class="navbar-vote-counts">
+                        <div class="navbar-vote-box nav-vote-success">
+                            <span class="count" id="favorableVotes">0</span>
+                            <span class="label">Favor</span>
+                        </div>
+                        <div class="navbar-vote-box nav-vote-danger">
+                            <span class="count" id="contraryVotes">0</span>
+                            <span class="label">Contra</span>
+                        </div>
+                        <div class="navbar-vote-box nav-vote-warning">
+                            <span class="count" id="abstentionVotes">0</span>
+                            <span class="label">Abst</span>
+                        </div>
+                    </div>
+
+                    <!-- Pie Chart Container -->
+                    <div class="pie-chart-container">
+                        <svg class="pie-chart"></svg>
+                        <div class="pie-percentage"></div>
+                    </div>
+
+                </div>
+                <div class="col-md-8">
+
+                    <div class="participants-list">
+                        <h5>Participantes:</h5>
+                        <div id="participantsContainer">
+                            <!-- Participants will be listed here -->
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+        <a href="http://bepkororoti.com">
+            <p class="text-center"><img src="img/bep.png" width="110" class="img-fluid" alt="BEP"></p>
+        </a>
+    </div>
+
+    <div id="botao-inicio">
+        <a href="/">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+            </svg>
+        </a>
+    </div>
+    <script type="module" src="./js/votacao.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajuda - SVCM</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .search-highlight {
+            background-color: #fff3cd;
+            padding: 2px;
+            border-radius: 3px;
+        }
+        
+        .topic-section {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            border-radius: 8px;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .subtopic {
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            padding-left: 1rem;
+            border-left: 3px solid var(--custom-blue);
+        }
+        
+        .table-of-contents {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+        
+        .table-of-contents ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        .table-of-contents li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .table-of-contents a {
+            color: var(--custom-blue);
+            text-decoration: none;
+        }
+        
+        .table-of-contents a:hover {
+            text-decoration: underline;
+        }
+
+        #searchInput {
+            border: 2px solid var(--custom-blue);
+            border-radius: 20px;
+            padding: 8px 16px;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            display: block;
+        }
+
+        #searchInput:focus {
+            outline: none;
+            box-shadow: 0 0 5px rgba(0,48,143,0.3);
+        }
+
+    </style>
+</head>
+<body class="bg-light">
+    <nav id="content0" class="navbar navbar-expand-lg navbar-dark fixed-top search-container" style="background-color: var(--dark-color);">
+        <div class="container-fluid">
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <img src="img/logo_svcm.png" class="img-fluid" width="100" alt="SVCM">
+                <small id="veread_nome" class="text-left ms-2" style="font-size: 0.6rem;"></small>
+            </a>
+
+            <input type="text" id="searchInput" placeholder="Buscar na ajuda... (Ex: 'como votar', 'cadastro', etc)" class="form-control">
+        </div>
+    </nav>
+
+    <div class="container my-4">
+
+        <div class="table-of-contents pt-5">
+            <h5 class="pt-5 mt-3">Índice</h5>
+            <ul>
+                <li><a href="#login">1. Página de Login</a></li>
+                <li><a href="#votacao">2. Página de Votação (Principal)</a></li>
+                <li><a href="#admin">3. Painel Administrativo</a></li>
+                <li><a href="#aovivo">4. Acompanhamento ao Vivo</a></li>
+                <li><a href="#resultados">5. Resultados das Votações</a></li>
+            </ul>
+        </div>
+
+        <div id="login" class="topic-section">
+            <h4>1. Página de Login</h4>
+            <div class="subtopic">
+                <h5>Como Acessar o Sistema</h5>
+                <p>Para acessar o SVCM (Sistema de Votação da Câmara Municipal), siga estas orientações:</p>
+                <ul>
+                    <li>Digite sua senha numérica pessoal de 6 dígitos no campo indicado (cada vereador tem sua própria senha)</li>
+                    <li>Verifique se digitou corretamente os números, pois a senha é sensível e deve ser exata</li>
+                    <li>Clique no botão "Entrar" ou pressione a tecla Enter para submeter</li>
+                    <li>Se a senha estiver correta, você será automaticamente redirecionado para sua área específica</li>
+                    <li>Em caso de erro na senha, uma mensagem vermelha aparecerá indicando o problema</li>
+                </ul>
+                <p class="alert alert-info">
+                    <i class="bi bi-info-circle-fill"></i>
+                    Importante: Vereadores e administradores têm senhas diferentes e são direcionados para áreas diferentes do sistema. 
+                    Vereadores vão para a página de votação, enquanto administradores acessam o painel administrativo.
+                </p>
+            </div>
+        </div>
+
+        <div id="votacao" class="topic-section">
+            <h4>2. Página de Votação (Principal)</h4>
+            <div class="subtopic">
+                <h5>Como Participar da Votação</h5>
+                <p>Na página principal de votação, você encontrará:</p>
+                <ul>
+                    <li>Cabeçalho com informações completas da sessão atual, incluindo data, hora e título</li>
+                    <li>Descrição detalhada do projeto ou matéria em votação</li>
+                    <li>Três botões grandes para registrar seu voto:
+                        <ul>
+                            <li><strong style="color: var(--success-color);">Favorável (Verde)</strong> - Para aprovar a matéria</li>
+                            <li><strong style="color: var(--danger-color);">Contrário (Vermelho)</strong> - Para rejeitar a matéria</li>
+                            <li><strong style="color: var(--warning-color);">Abstenção (Amarelo)</strong> - Para se abster da votação</li>
+                        </ul>
+                    </li>
+                    <li>Os botões ficam desabilitados quando:
+                        <ul>
+                            <li>Não há sessão ativa no momento</li>
+                            <li>Você não está habilitado para votar na sessão atual</li>
+                            <li>A votação foi encerrada</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="subtopic">
+                <h5>Acompanhamento dos Resultados</h5>
+                <p>Durante a votação, você pode monitorar:</p>
+                <ul>
+                    <li>Barra de progresso colorida mostrando a distribuição atual dos votos:
+                        <ul>
+                            <li>Verde: Quantidade de votos favoráveis</li>
+                            <li>Vermelho: Quantidade de votos contrários</li>
+                            <li>Amarelo: Quantidade de abstenções</li>
+                        </ul>
+                    </li>
+                    <li>Contagem numérica específica para cada tipo de voto</li>
+                    <li>Atualização automática dos resultados em tempo real</li>
+                    <li>Seu voto atual ficará destacado no respectivo botão</li>
+                </ul>
+                <p class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    Atenção: É possível mudar seu voto durante a sessão ativa, mas apenas o último voto será contabilizado.
+                </p>
+            </div>
+        </div>
+
+        <div id="admin" class="topic-section">
+            <h4>3. Painel Administrativo</h4>
+            <div class="subtopic">
+                <h5>Gerenciamento de Sessões</h5>
+                <p>No painel de controle de sessões, você tem acesso a diversas funcionalidades:</p>
+                <ul>
+                    <li>Criar novas sessões de votação:
+                        <ul>
+                            <li>Defina data e hora da sessão</li>
+                            <li>Estabeleça um título claro para a matéria</li>
+                            <li>Forneça uma descrição detalhada do que será votado</li>
+                        </ul>
+                    </li>
+                    <li>Controle de sessões existentes:
+                        <ul>
+                            <li>Ativar/desativar sessões individualmente</li>
+                            <li>Redirecionar participantes entre visualização ao vivo e resultados</li>
+                            <li>Zerar contagem de votos quando necessário</li>
+                            <li>Visualizar contagem atual de votos (favoráveis, contrários e abstenções)</li>
+                            <li>Excluir sessões que não são mais necessárias</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="subtopic">
+                <h5>Cadastro e Gerenciamento de Vereadores</h5>
+                <p>Para gerenciar o cadastro dos vereadores:</p>
+                <ul>
+                    <li>Novo cadastro:
+                        <ul>
+                            <li>Preencha o nome completo do vereador</li>
+                            <li>Selecione o partido político na lista fornecida</li>
+                            <li>Defina uma senha numérica de 6 dígitos</li>
+                            <li>Faça upload da foto do vereador (opcional)</li>
+                        </ul>
+                    </li>
+                    <li>Edição de cadastro:
+                        <ul>
+                            <li>Atualize nome, partido ou foto quando necessário</li>
+                            <li>Altere a senha do vereador (opcional)</li>
+                            <li>Visualize a foto atual antes de fazer alterações</li>
+                        </ul>
+                    </li>
+                    <li>Exclusão de cadastro:
+                        <ul>
+                            <li>Remove completamente o vereador do sistema</li>
+                            <li>Exige confirmação para evitar exclusões acidentais</li>
+                            <li>Apaga também o histórico de votos deste vereador</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="subtopic">
+                <h5>Controle de Participantes</h5>
+                <p>Para gerenciar quem pode votar em cada sessão:</p>
+                <ul>
+                    <li>Seleção de participantes:
+                        <ul>
+                            <li>Visualize todos os vereadores em cards individuais</li>
+                            <li>Clique nos cards para selecionar/deselecionar vereadores</li>
+                            <li>Use o botão "Selecionar Todos" para agilizar o processo</li>
+                            <li>Cards selecionados ficam destacados visualmente</li>
+                        </ul>
+                    </li>
+                    <li>Confirmação de participantes:
+                        <ul>
+                            <li>Clique em "Salvar Seleção" para confirmar os participantes</li>
+                            <li>Apenas vereadores selecionados poderão votar</li>
+                            <li>A seleção pode ser alterada a qualquer momento</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="aovivo" class="topic-section">
+            <h4>4. Acompanhamento ao Vivo</h4>
+            <div class="subtopic">
+                <h5>Visualização em Tempo Real</h5>
+                <p>Na página de acompanhamento ao vivo, você pode:</p>
+                <ul>
+                    <li>Visualizar informações da sessão:
+                        <ul>
+                            <li>Título e descrição completa da matéria em votação</li>
+                            <li>Data e hora da sessão atual</li>
+                            <li>Status de atividade da sessão</li>
+                        </ul>
+                    </li>
+                    <li>Acompanhar votos em tempo real:
+                        <ul>
+                            <li>Cards individuais para cada vereador participante</li>
+                            <li>Mudança de cor do card conforme o voto (verde, vermelho ou amarelo)</li>
+                            <li>Foto e nome do vereador sempre visíveis</li>
+                            <li>Atualização automática sem necessidade de recarregar a página</li>
+                        </ul>
+                    </li>
+                    <li>Monitorar totalizações:
+                        <ul>
+                            <li>Contadores no topo da página para cada tipo de voto</li>
+                            <li>Atualização instantânea dos números</li>
+                            <li>Visualização clara da distribuição dos votos</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div id="resultados" class="topic-section">
+            <h4>5. Resultados das Votações</h4>
+            <div class="subtopic">
+                <h5>Visualização Detalhada dos Resultados</h5>
+                <p>Na página de resultados de uma votação específica, você encontra:</p>
+                <ul>
+                    <li>Informações gerais:
+                        <ul>
+                            <li>Título completo da matéria votada</li>
+                            <li>Data e hora exata da sessão</li>
+                            <li>Descrição detalhada do projeto ou matéria</li>
+                        </ul>
+                    </li>
+                    <li>Resultados numéricos:
+                        <ul>
+                            <li>Boxes coloridos com contagem de cada tipo de voto</li>
+                            <li>Gráfico em pizza mostrando proporções visuais</li>
+                            <li>Percentuais calculados automaticamente</li>
+                        </ul>
+                    </li>
+                    <li>Lista de votantes:
+                        <ul>
+                            <li>Nome e foto de cada vereador participante</li>
+                            <li>Indicador colorido do voto de cada participante</li>
+                            <li>Organização clara e fácil de consultar</li>
+                        </ul>
+                    </li>
+                </ul>
+                <p class="alert alert-info">
+                    <i class="bi bi-info-circle-fill"></i>
+                    Nota: Esta página pode ser acessada diretamente através de um link específico para cada votação, 
+                    permitindo compartilhar os resultados mesmo após o encerramento da sessão.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchText = e.target.value.toLowerCase();
+            
+            // Remove existing highlights
+            document.querySelectorAll('.search-highlight').forEach(el => {
+                const parent = el.parentNode;
+                parent.replaceChild(document.createTextNode(el.textContent), el);
+            });
+            
+            if (searchText.length < 2) return; // Minimum 2 characters to search
+            
+            const walker = document.createTreeWalker(
+                document.body,
+                NodeFilter.SHOW_TEXT,
+                null,
+                false
+            );
+            
+            let node;
+            let found = false;
+            
+            while (node = walker.nextNode()) {
+                const parent = node.parentElement;
+                if (parent.tagName === 'SCRIPT' || parent.tagName === 'STYLE') continue;
+                
+                const content = node.textContent;
+                const index = content.toLowerCase().indexOf(searchText);
+                
+                if (index >= 0) {
+                    if (!found) {
+                        // First match - scroll to it
+                        parent.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        found = true;
+                    }
+                    
+                    const span = document.createElement('span');
+                    span.className = 'search-highlight';
+                    
+                    const before = document.createTextNode(content.substring(0, index));
+                    const match = document.createTextNode(content.substring(index, index + searchText.length));
+                    const after = document.createTextNode(content.substring(index + searchText.length));
+                    
+                    span.appendChild(match);
+                    const fragment = document.createDocumentFragment();
+                    fragment.appendChild(before);
+                    fragment.appendChild(span);
+                    fragment.appendChild(after);
+                    
+                    parent.replaceChild(fragment, node);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

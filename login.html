@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - SVCM</title>
+    <meta name="description"
+        content="SVCM: Sistema de Votação da Câmara Municipal, desenvolvido pela BEP (bepkororoti.com). Solução inovadora para votações online, com segurança e transparência.">
+    <meta name="keywords"
+        content="SVCM, Sistema de Votação, Câmara Municipal, Votação Online, BEP, bepkororoti.com, Valdemir Vinagre Mendes, Tecnologia, Inovação, Votação Segura, Transparência">
+    <meta name="author" content="Valdemir Vinagre Mendes">
+    <meta property="og:title" content="SVCM - Sistema de Votação da Câmara Municipal">
+    <meta property="og:description"
+        content="SVCM: Sistema de Votação da Câmara Municipal, desenvolvido pela BEP (bepkororoti.com). Votação online segura e transparente.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://svcm.peconha.com">
+    <meta property="og:image" content="https://svcm.peconha.com/img/logo-svcm.png">
+    <meta property="og:site_name" content="SVCM">
+
+    <link rel="icon" href="img/favicon.ico">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .slider-container {
+            width: 100px;
+            height: 30px;
+            background-color: #ddd;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            touch-action: pan-y;
+            /* Permite rolagem vertical na página */
+            display: flex; /* Para alinhar a seta e o thumb */
+            align-items: center; /* Alinhar verticalmente */
+        }
+
+        .slider-thumb {
+            width: 40px;
+            height: 30px;
+            background-color: #727272;
+            border-radius: 15px;
+            position: absolute;
+            cursor: grab;
+            touch-action: none;
+            /* Impede rolagem no polegar */
+        }
+
+        .arrow-right {
+            font-size: 1.3em; /* Ajuste o tamanho da seta */
+            color: #ffffff; 
+            margin-right: 4px; /* Espaço entre a seta e o slider */
+            margin-bottom: 8px; /* Espaço entre a seta e o slider */
+        }
+    </style>
+    <script>
+        window.global = window;
+    </script>
+    <script type="importmap">
+    {
+        "imports": {
+            "bootstrap": "https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js",
+            "./js/auth.js": "./js/auth.js",
+            "config.js": "./config.js"
+        }
+    }
+    </script>
+</head>
+
+<body class="bg-light">
+    <div class="login-container">
+
+        <div id="offline-message" class="alert alert-danger d-none" role="alert">
+            Você está offline. Por favor, verifique sua conexão.
+        </div>
+
+        <div class="card shadow" id="content">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <a href="/" class="text-decoration-none">
+                        <img src="img/svcm_Logo.png" class="img-fluid" alt="SVCM">
+                        <p class="text-center" style="color: #0d8ed1;">Sistema de Votação da Câmara Municipal</p>
+                    </a>
+                </div>
+                <div id="loginError" class="alert alert-danger d-none mb-3"></div>
+                <form id="loginForm">
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Senha</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="password" pattern="\d{6}"
+                                title="A senha deve ter exatamente 6 números." required disabled>
+                            <div class="input-group-append">
+                                <span class="input-group-text" id="unlock-slider">
+                                    <div class="slider-container">
+                                        <div class="slider-thumb">
+                                            <i class="bi bi-arrow-right arrow-right"></i>
+                                        </div>
+                                    </div>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-dark" disabled>Entrar</button>
+                    </div>
+                </form>
+
+                <script>
+                    const passwordInput = document.getElementById('password');
+                    const loginButton = document.querySelector('#loginForm button[type="submit"]');
+                    const sliderThumb = document.querySelector('.slider-thumb');
+                    let isDragging = false;
+                    let offsetX = 0;
+
+                    function handleStart(e) {
+                        isDragging = true;
+                        offsetX = (e.type === 'touchstart' ? e.touches[0].clientX : e.clientX) - sliderThumb.getBoundingClientRect().left;
+                    }
+
+                    function handleMove(e) {
+                        if (!isDragging) return;
+                        const clientX = e.type === 'touchmove' ? e.touches[0].clientX : e.clientX;
+                        let position = clientX - offsetX - sliderThumb.parentElement.getBoundingClientRect().left;
+                        if (position < 0) position = 0;
+                        if (position > sliderThumb.parentElement.offsetWidth - sliderThumb.offsetWidth) {
+                            position = sliderThumb.parentElement.offsetWidth - sliderThumb.offsetWidth;
+                        }
+                        sliderThumb.style.left = position + 'px';
+                        if (position >= sliderThumb.parentElement.offsetWidth - sliderThumb.offsetWidth) {
+                            passwordInput.disabled = false;
+                            loginButton.disabled = false;
+                            sliderThumb.style.backgroundColor = '#0d6efd';
+                            sliderThumb.style.cursor = 'default';
+                            isDragging = false;
+                        }
+                    }
+
+                    function handleEnd() {
+                        isDragging = false;
+                    }
+
+                    sliderThumb.addEventListener('mousedown', handleStart);
+                    sliderThumb.addEventListener('touchstart', handleStart);
+
+                    document.addEventListener('mousemove', handleMove);
+                    document.addEventListener('touchmove', handleMove);
+
+                    document.addEventListener('mouseup', handleEnd);
+                    document.addEventListener('touchend', handleEnd);
+                </script>
+            </div>
+        </div>
+
+        <p></p>
+        <a href="http://bepkororoti.com">
+            <p class="text-center"><img src="img/bep.png" width="110" class="img-fluid" alt="BEP"></p>
+        </a>
+    </div>
+
+    <script type="module">
+        import { login } from './js/auth.js';
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const errorDiv = document.getElementById('loginError');
+            const password = document.getElementById('password').value;
+            const submitButton = e.target.querySelector('button[type="submit"]');
+
+            try {
+                submitButton.disabled = true;
+                submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Entrando...';
+                errorDiv.classList.add('d-none');
+
+                await login(password);
+            } catch (error) {
+                errorDiv.textContent = error.message || 'Erro ao fazer login. Tente novamente.';
+                errorDiv.classList.remove('d-none');
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Entrar';
+            }
+        });
+
+        function checkConnection() {
+            const offlineDiv = document.getElementById('offline-message');
+            const contentDiv = document.getElementById('content');
+
+            fetch('https://www.google.com', { mode: 'no-cors' })
+                .then(() => {
+                    console.log('Online');
+                    // Remove a classe 'd-none' para mostrar o conteúdo
+                    contentDiv.classList.remove('d-none');
+                    // Adiciona a classe 'd-none' para ocultar a div offline
+                    offlineDiv.classList.add('d-none');
+                })
+                .catch(() => {
+                    console.log('Offline');
+                    // Remove a classe 'd-none' para mostrar a div offline
+                    offlineDiv.classList.remove('d-none');
+                    // Adiciona a classe 'd-none' para ocultar o conteúdo
+                    contentDiv.classList.add('d-none');
+                });
+        }
+
+        // Verifica a conexão a cada 5 segundos
+        setInterval(checkConnection, 5000);
+
+        // Verifica a conexão ao carregar a página
+        checkConnection();
+    </script>
+</body>
+
+</html>
