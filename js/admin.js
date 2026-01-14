@@ -312,11 +312,11 @@ async function loadSessions() {
                     </span>
                 </td>
                 <td> 
-                    <div class="vote-count-cell">
-                        <span class="vote-count-badge bg-success" title="Favoráveis">${session.favorable_votes || 0}</span>
-                        <span class="vote-count-badge bg-danger" title="Contrários">${session.contrary_votes || 0}</span>
-                        <span class="vote-count-badge bg-warning" title="Abstenções">${session.abstention_votes || 0}</span>
-                    </div>
+                            <div class="vote-count-cell">
+                            <span id="fav-${session.id}" class="vote-count-badge bg-success" title="Favoráveis">${session.favorable_votes || 0}</span>
+                            <span id="con-${session.id}" class="vote-count-badge bg-danger" title="Contrários">${session.contrary_votes || 0}</span>
+                            <span id="abs-${session.id}" class="vote-count-badge bg-warning" title="Abstenções">${session.abstention_votes || 0}</span>
+                        </div>
                 </td>
                 <td class="session-actions">
                     ${actionButtons}
@@ -333,6 +333,12 @@ async function loadSessions() {
         `;
         }).join('');
         console.log('Sessions list populated');
+
+        // Ensure admin real-time stream is running (start once)
+        if (!window._adminStreamStarted) {
+            setupAdminStream();
+            window._adminStreamStarted = true;
+        }
 
     } catch (error) {
         console.error('Error loading sessions:', error);
@@ -695,6 +701,134 @@ async function loadParticipants() {
     } catch (error) {
         showError('participantsError', error.message);
     }
+}
+
+// --- Real-time admin stream & helpers ---
+let _adminEventSource = null;
+let _adminPollInterval = null;
+
+function updateSessionCountsById(sessionId, favorable, contrary, abstention) {
+    const favEl = document.getElementById(`fav-${sessionId}`);
+    const conEl = document.getElementById(`con-${sessionId}`);
+    const absEl = document.getElementById(`abs-${sessionId}`);
+
+    if (favEl) favEl.textContent = favorable;
+    if (conEl) conEl.textContent = contrary;
+    if (absEl) absEl.textContent = abstention;
+}
+
+async function fetchAndUpdateSessionCounts(sessionId) {
+    try {
+        const resp = await fetch(`${config.apiBaseUrl}/get_session_results.php?id=${sessionId}`);
+        if (!resp.ok) return;
+        const data = await resp.json();
+        updateSessionCountsById(sessionId, data.favorable_votes || 0, data.contrary_votes || 0, data.abstention_votes || 0);
+    } catch (err) {
+        console.error('Admin: Error fetching session results:', err);
+    }
+}
+
+function updatePublicViewButton(data) {
+    const btn = document.getElementById('publicViewBtn');
+    if (!btn) return;
+    if (data.redirect_status === 'to_results' && data.session_id) {
+        btn.textContent = 'RESULTADO';
+        btn.href = `votacao.html?id=${data.session_id}`;
+    } else {
+        btn.textContent = 'AO VIVO';
+        btn.href = 'aovivo.html';
+    }
+}
+
+function handleAdminStreamData(data) {
+    try {
+        // If active session included, update that session's three counts
+        if (data.active_session) {
+            const s = data.active_session;
+            updateSessionCountsById(s.id, s.favorable_votes || 0, s.contrary_votes || 0, s.abstention_votes || 0);
+        }
+
+        // If redirect points to results, fetch that session to ensure counts
+        if (data.redirect_status === 'to_results' && data.session_id) {
+            fetchAndUpdateSessionCounts(data.session_id);
+        }
+
+        // Update AO VIVO / RESULTADO button
+        updatePublicViewButton(data);
+
+    } catch (err) {
+        console.error('Admin: Error handling stream data:', err);
+    }
+}
+
+function startAdminPolling() {
+    if (_adminPollInterval) clearInterval(_adminPollInterval);
+    _adminPollInterval = setInterval(async () => {
+        try {
+            const [redirectResp, activeResp] = await Promise.all([
+                fetch(`${config.apiBaseUrl}/get_redirect_status.php`),
+                fetch(`${config.apiBaseUrl}/get_active_session.php`)
+            ]);
+
+            if (redirectResp.ok) {
+                const rd = await redirectResp.json();
+                handleAdminStreamData(rd);
+            }
+
+            if (activeResp.ok) {
+                const as = await activeResp.json();
+                // get_active_session returns object with active_session
+                if (as.active_session) {
+                    handleAdminStreamData({ active_session: as.active_session });
+                }
+            }
+        } catch (err) {
+            console.error('Admin polling error:', err);
+        }
+    }, config.refreshInterval);
+}
+
+function setupAdminStream() {
+    if (typeof EventSource === 'undefined') {
+        console.log('Admin: SSE not supported, using polling fallback.');
+        startAdminPolling();
+        return;
+    }
+
+    const srcUrl = `${config.apiBaseUrl}/redirect_stream.php`;
+
+    try {
+        _adminEventSource = new EventSource(srcUrl);
+    } catch (err) {
+        console.error('Admin: Failed to create EventSource:', err);
+        startAdminPolling();
+        return;
+    }
+
+    _adminEventSource.addEventListener('open', () => {
+        console.log('Admin: Connected to redirect event stream.');
+        if (_adminPollInterval) {
+            clearInterval(_adminPollInterval);
+            _adminPollInterval = null;
+        }
+    });
+
+    _adminEventSource.addEventListener('redirect', (e) => {
+        try {
+            const data = JSON.parse(e.data);
+            handleAdminStreamData(data);
+        } catch (err) {
+            console.error('Admin: Error parsing redirect event:', err);
+        }
+    });
+
+    _adminEventSource.addEventListener('error', (e) => {
+        console.error('Admin: EventSource error; falling back to polling.', e);
+        if (_adminEventSource.readyState === EventSource.CLOSED) {
+            console.log('Admin: EventSource closed; starting polling.');
+            startAdminPolling();
+        }
+    });
 }
 
 window.toggleVereador = (id) => {

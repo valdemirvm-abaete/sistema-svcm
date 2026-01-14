@@ -35,8 +35,69 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('loadingMessage').textContent = `Erro ao carregar dados da votação: ${error.message}`;
     }
 
-    setInterval(checkRedirectStatus, config.refreshInterval);
+    // Start polling as a fallback; SSE will clear this interval when connected
+    let redirectInterval = setInterval(checkRedirectStatus, config.refreshInterval);
+
+    // Try to connect via SSE for instant redirects
+    setupRedirectStream();
 });
+
+// SSE-based redirect stream (with polling fallback)
+function setupRedirectStream() {
+    if (typeof EventSource === 'undefined') {
+        console.log('Votacao: EventSource not supported; using polling fallback.');
+        return;
+    }
+
+    const srcUrl = `${config.apiBaseUrl}/redirect_stream.php`;
+    let es;
+
+    try {
+        es = new EventSource(srcUrl);
+    } catch (e) {
+        console.error('Votacao: Failed to create EventSource:', e);
+        return;
+    }
+
+    es.addEventListener('open', () => {
+        console.log('Votacao: Connected to redirect event stream. Stopping polling.');
+        if (redirectInterval) {
+            clearInterval(redirectInterval);
+            redirectInterval = null;
+        }
+    });
+
+    es.addEventListener('redirect', (e) => {
+        try {
+            const data = JSON.parse(e.data);
+            console.log('Votacao: redirect event received', data);
+
+            // If admin requested to go back to live, navigate to AoVivo
+            if (data.redirect_status === 'to_live') {
+                window.location.href = 'aovivo.html';
+                return;
+            }
+
+            // If admin requested results for a different session, switch pages
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentSessionId = urlParams.get('id');
+            if (data.redirect_status === 'to_results' && data.session_id && String(data.session_id) !== String(currentSessionId)) {
+                window.location.href = `votacao.html?id=${data.session_id}`;
+            }
+
+        } catch (err) {
+            console.error('Votacao: Error parsing redirect event:', err);
+        }
+    });
+
+    es.addEventListener('error', (e) => {
+        console.error('Votacao: EventSource error, falling back to polling.', e);
+        if (es.readyState === EventSource.CLOSED) {
+            console.log('Votacao: EventSource closed; restarting polling.');
+            if (!redirectInterval) redirectInterval = setInterval(checkRedirectStatus, config.refreshInterval);
+        }
+    });
+}
 
 async function fetchSessionData(sessionId) {
     const url = `${config.apiBaseUrl}/get_session_results.php?id=${sessionId}`;

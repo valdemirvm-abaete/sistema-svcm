@@ -311,30 +311,19 @@ async function loadActiveSession() {
         sessionData = await sessionResponse.json();
         // console.log('AoVivo: Active session data received:', sessionData);
 
-        // Check for redirect status from active session
-        if (sessionData.active_session?.redirect_status === 'to_results') {
-            // Get session ID for redirection
-            const sessionId = sessionData.active_session.id;
-            // Redirect to results page
-            window.location.href = `votacao.html?id=${sessionId}`;
-            return; // Stop further execution
-        }
-        
-        // If no active session, check redirect status from finalized sessions
-        if (!sessionData.active_session) {
-            try {
-                const redirectResponse = await fetch(`${config.apiBaseUrl}/get_redirect_status.php`);
-                if (redirectResponse.ok) {
-                    const redirectData = await redirectResponse.json();
-                    if (redirectData.redirect_status === 'to_results' && redirectData.session_id) {
-                        // Redirect to results page of finalized session
-                        window.location.href = `votacao.html?id=${redirectData.session_id}`;
-                        return; // Stop further execution
-                    }
+        // Check redirect status (active or finalized) — always check so admin can force viewing results of any session
+        try {
+            const redirectResponse = await fetch(`${config.apiBaseUrl}/get_redirect_status.php`);
+            if (redirectResponse.ok) {
+                const redirectData = await redirectResponse.json();
+                if (redirectData.redirect_status === 'to_results' && redirectData.session_id) {
+                    // Redirect to results page of the session specified by admin
+                    window.location.href = `votacao.html?id=${redirectData.session_id}`;
+                    return; // Stop further execution
                 }
-            } catch (error) {
-                console.error('Error checking redirect status:', error);
             }
+        } catch (error) {
+            console.error('Error checking redirect status:', error);
         }
 
         // Fetch vereadores regardless of session status to handle transitions smoothly
@@ -462,7 +451,125 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Add resize listener to adjust cards when window size changes
     window.addEventListener('resize', handleResize);
+
+    // Setup Server-Sent Events (SSE) to receive redirect updates in real-time
+    setupRedirectStream();
 });
+
+// SSE: real-time redirect updates (falls back to polling if SSE unsupported)
+function setupRedirectStream() {
+    if (typeof EventSource === 'undefined') {
+        console.log('AoVivo: EventSource not supported in this browser; using polling fallback.');
+        return;
+    }
+
+    const srcUrl = `${config.apiBaseUrl}/redirect_stream.php`;
+    let es;
+
+    try {
+        es = new EventSource(srcUrl);
+    } catch (e) {
+        console.error('AoVivo: Failed to create EventSource:', e);
+        return;
+    }
+
+    es.addEventListener('open', () => {
+        console.log('AoVivo: Connected to redirect event stream. Stopping polling.');
+        if (activeInterval) {
+            clearInterval(activeInterval);
+            activeInterval = null;
+        }
+    });
+
+    es.addEventListener('redirect', (e) => {
+        try {
+            const data = JSON.parse(e.data);
+            console.log('AoVivo: redirect event received', data);
+
+            // If admin requested to see results for a session, navigate immediately
+            if (data.redirect_status === 'to_results' && data.session_id) {
+                window.location.href = `votacao.html?id=${data.session_id}`;
+                return; // navigation takes precedence
+            }
+
+            // If payload includes active_session, update UI immediately from the payload (fast path)
+            if (data.active_session) {
+                const s = data.active_session;
+
+                // Update navbar counts
+                const fav = s.favorable_votes || 0;
+                const con = s.contrary_votes || 0;
+                const abs = s.abstention_votes || 0;
+                document.getElementById('navFavorableCount').textContent = fav;
+                document.getElementById('navContraryCount').textContent = con;
+                document.getElementById('navAbstentionCount').textContent = abs;
+
+                // Update partial results bar
+                updatePartialResultsBar(fav, con, abs);
+
+                // Update session info UI
+                const sessionInfoDiv = document.getElementById('sessionInfo');
+                const noActiveSessionDiv = document.getElementById('noActiveSession');
+                if (sessionInfoDiv) sessionInfoDiv.style.display = 'block';
+                if (noActiveSessionDiv) noActiveSessionDiv.style.display = 'none';
+
+                document.getElementById('sessionDateTime').textContent = `Sessão: ${new Date(s.session_datetime).toLocaleString()}`;
+                document.getElementById('votingTitle').textContent = s.title || '';
+                document.getElementById('votingDescription').textContent = s.description || '';
+                const activeStatusBadge = document.getElementById('activeStatus');
+                if (activeStatusBadge) activeStatusBadge.style.display = s.is_active ? 'inline-block' : 'none';
+
+                // Update per-vereador votes if provided
+                const votes = s.votes || {};
+                previousVotes = votes;
+
+                if (participatingVereadoresMap && participatingVereadoresMap.size > 0) {
+                    // Convert map to array of vereadores and sync grid with new votes
+                    const participants = Array.from(participatingVereadoresMap.values()).filter(v => v.can_vote === true || v.can_vote === 1 || v.can_vote === "1");
+                    syncVereadoresGrid(participants, votes);
+                } else {
+                    // If we don't have vereador list yet, fall back to a full reload which will fetch vereadores
+                    try { loadActiveSession(); } catch (err) { console.error('AoVivo: Error loading session after SSE payload:', err); }
+                }
+
+                return; // handled
+            }
+
+            // If no active_session in payload, reconcile state by refreshing UI (session ended)
+            // This handles transitions to "Aguardando início" without requiring a manual reload
+            try {
+                const noActiveSessionDiv = document.getElementById('noActiveSession');
+                if (noActiveSessionDiv) noActiveSessionDiv.style.display = 'block';
+
+                // Clear counts and bars
+                document.getElementById('navFavorableCount').textContent = 0;
+                document.getElementById('navContraryCount').textContent = 0;
+                document.getElementById('navAbstentionCount').textContent = 0;
+                updatePartialResultsBar(0, 0, 0);
+
+                // Clear grid and session info
+                const grid = document.getElementById('vereadoresGrid');
+                if (grid) grid.innerHTML = '<p class="text-muted col-12">Carregando vereadores...</p>';
+                const sessionInfoDiv = document.getElementById('sessionInfo');
+                if (sessionInfoDiv) sessionInfoDiv.style.display = 'none';
+
+            } catch (err) {
+                console.error('AoVivo: Error handling no-active-session SSE payload:', err);
+            }
+
+        } catch (err) {
+            console.error('AoVivo: Error parsing redirect event:', err);
+        }
+    });
+
+    es.addEventListener('error', (e) => {
+        console.error('AoVivo: EventSource error, attempting to fallback to polling.', e);
+        if (es.readyState === EventSource.CLOSED) {
+            console.log('AoVivo: EventSource closed; restarting polling.');
+            if (!activeInterval) activeInterval = setInterval(loadActiveSession, config.refreshInterval);
+        }
+    });
+}
 
 window.addEventListener('unload', () => {
     if (activeInterval) {

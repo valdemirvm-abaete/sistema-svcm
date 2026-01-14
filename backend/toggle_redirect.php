@@ -32,7 +32,7 @@ try {
         $stmt->execute([$id]);
     } else {
         $stmt = $db->prepare('UPDATE voting_sessions SET redirect_status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?');
-        $stmt->execute([$redirectStatus, $id]);
+    $stmt->execute([$redirectStatus, $id]);
     }
     
     $db->commit();
